@@ -16,7 +16,7 @@ def sample_negative_hyperedges(hyperedges, total_nodes, count):
     size_dist = get_size_distribution(hyperedges)
     hyperedge_length = [k for k, _ in size_dist.items()]
     pvals = [v for _, v in size_dist.items()]
-    sampled_sizes = np.random.choice(hyperedge_length, pvals=pvals, size=count)
+    sampled_sizes = np.random.choice(hyperedge_length, p=pvals, size=count)
     negative_hyperedges = set()
     hyperedges = set(hyperedges)
     while len(negative_hyperedges) < count:
