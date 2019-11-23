@@ -3,6 +3,7 @@ import scipy.sparse as sp
 from functools import reduce
 import numpy as np
 import networkx as nx
+from tqdm import tqdm
 
 def arithmatic_mean(vals):
     if len(vals) == 0:
@@ -34,7 +35,7 @@ def hyper_common_neighbors(edge, hyperedges, nodes_to_neighbors, *vargs):
 
 def hyper_adamic_adar(edge, hyperedges, nodes_to_neighbors, *vargs):
     return mean(
-        [1.0 / np.log10(len(nodes_to_neighbors[i]))
+        [1.0 / np.log10(len(nodes_to_neighbors[node]))
          for i in edge for j in edge
          for node in nodes_to_neighbors[i].intersection(nodes_to_neighbors[j])
          if i < j],
@@ -113,6 +114,7 @@ FEATURE_MAP = {
 }
 
 def preprocess(H):
+    print('Preprocessing Hypergraph information')
     H = sp.csr_matrix(H)
     A = H * H.T
     D = H.T * H
@@ -120,8 +122,12 @@ def preprocess(H):
     D[D > 0] = 1
     A.setdiag([0] * A.shape[0])
     D.setdiag([0] * D.shape[0])
+
+    print('Calculating Katz Matrix')
     katz = np.linalg.pinv(np.eye(A.shape[0]) - 0.05 * A) - np.eye(A.shape[0])
     G = nx.from_numpy_matrix(A.toarray())
+
+    print('Finding all pairs shortest paths')
     shortest_path_lengths = dict(nx.all_pairs_shortest_path_length(G))
     nodes_to_neighbors = defaultdict(set)
     for i, j in zip(*A.nonzero()):
@@ -131,6 +137,8 @@ def preprocess(H):
     for i, j in zip(*D.nonzero()):
         dual_nodes_to_neighbors[i].add(j)
         dual_nodes_to_neighbors[j].add(i)
+    
+    print('Preprocessing stage completed')
     return (
         H, A, D, nodes_to_neighbors, dual_nodes_to_neighbors,
         shortest_path_lengths, katz)
@@ -143,7 +151,8 @@ def hyperedge_featurizer(hyperedges, H, features):
     if features is None:
         features = FEATURE_MAP.keys()
     
-    for edgeidx, edge in enumerate(hyperedges):
+    print('Calculating Hyperedge features')
+    for edgeidx, edge in enumerate(tqdm(hyperedges)):
         edge_features = {}
         for feat in features:
             val = FEATURE_MAP[feat](

@@ -55,3 +55,32 @@ def network_deconvolution(A, threshold=0.35):
     A_deconv[A_deconv > threshold] = 1
     A_deconv[A_deconv <= threshold] = 0
     return A_deconv
+
+def split_hyperedges_according_to_time_for_ty2001_06_dataset(
+        hyperedges, hyperedges_timestamps):
+    '''Split hyperedges according to timestamp. Sort hyperedges according to
+    their timestamp and then split into three parts.
+
+    Returns:
+    List. A triplet consisting of hyperedges split into three parts.
+    '''
+    ground_idcs = [idx for idx, year in enumerate(hyperedges_timestamps) if year <= 2007]
+    train_idcs = [idx for idx, year in enumerate(hyperedges_timestamps) if 2008 <= year <= 2013]
+    test_idcs = [idx for idx, year in enumerate(hyperedges_timestamps) if 2013 <= year]
+    ground_hyperedges = [hyperedges[idx] for idx in ground_idcs]
+    train_hyperedges = [hyperedges[idx] for idx in train_idcs]
+    test_hyperedges = [hyperedges[idx] for idx in test_idcs]
+    return ground_hyperedges, train_hyperedges, test_hyperedges
+
+def split_chsim_dataset(hyperedges):
+    '''Split hyperedges according to timestamp. Sort hyperedges according to
+    their timestamp and then split into three parts.
+
+    Returns:
+    List. A triplet consisting of hyperedges split into three parts.
+    '''
+    total_hyperedges = len(hyperedges)    
+    ground = hyperedges[:int(0.2 * total_hyperedges)]
+    train = hyperedges[int(0.2 * total_hyperedges): int(0.5 * total_hyperedges)]
+    test = hyperedges[:int(0.5 * total_hyperedges):]
+    return ground, train, test
