@@ -1,4 +1,5 @@
 import pandas as pd
+from collections import defaultdict
 
 def read_ty2001_06_dataset():
     '''Read dataset from file.
@@ -103,4 +104,7 @@ def read_chsim_dataset():
     f = open('./data/chsim_node_information.txt')
     node_active = {int(line.strip().split()[0]): True if line.strip().split()[1] == 'Active' else False for line in f.readlines()}
     f.close()
-    return hyperedges, node_active
+
+    hyperedges = [hedge for hedge in hyperedges if all(
+        node_active[node] for node in hedge)]
+    return hyperedges, len(node_active)

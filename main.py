@@ -42,11 +42,8 @@ if __name__ == '__main__':
         ground, train, test = (
             utils.split_hyperedges_according_to_time_for_ty2001_06_dataset(
                 hyperedges, hyperedges_timestamps))
-        node_active = None
     else:
-        hyperedges, node_active = (
-            reader.read_chsim_dataset())
-        total_nodes = len(node_active)
+        hyperedges, total_nodes = reader.read_chsim_dataset()
         ground, train, test = utils.split_chsim_dataset(hyperedges)
 
     Htest = utils.hyperedges_to_incidence_matrix(test, total_nodes)
@@ -58,8 +55,8 @@ if __name__ == '__main__':
         clfs = []
         roc_scores = []
         for i in range(args.nsamples):
-            roc_score, clf = predictor.train_feature_based_classifier(
-                ground, train, test, features, total_nodes, node_active)
+            roc_score, clf, curve = predictor.train_feature_based_classifier(
+                ground, train, test, features, total_nodes)
             clfs.append(clf)
             roc_scores.append(roc_score)
         if args.nsamples > 1:
@@ -88,9 +85,9 @@ if __name__ == '__main__':
         clfs = []
         roc_scores = []
         for i in range(args.nsamples):
-            roc_score, clf = predictor.train_spectral_classifier(
+            roc_score, clf, curve = predictor.train_spectral_classifier(
                 ground, train, test, total_nodes, args.dim, args.emb_type,
-                args.pool, node_active)
+                args.pool)
             clfs.append(clf)
             roc_scores.append(roc_score)
 
